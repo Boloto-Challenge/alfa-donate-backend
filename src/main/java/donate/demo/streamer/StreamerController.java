@@ -82,7 +82,7 @@ public class StreamerController {
     }
 
     @GetMapping("user/{id}/donations")
-    public List<DonationInfo> getDonationInfo(@PathVariable("id") String id) {
+    public List<Map<String, Object>> getDonationInfo(@PathVariable("id") String id) {
         String infoUrl = "https://admin.netmonet.co/api/external/v1/waiter/" + id + "/incoming";
 
         Request request = new Request.Builder()
@@ -99,8 +99,7 @@ public class StreamerController {
         try (Response response = client.newCall(request).execute()) {
             String result = Objects.requireNonNull(response.body()).string();
             Map<String, List<Map<String, Object>>> map = mapper.readValue(result, Map.class);
-            List<Map<String, Object>> donations = map.get("data");
-            return mapper.readValue(mapper.writeValueAsString(donations), new TypeReference<List<DonationInfo>>() {});
+            return map.get("data");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
