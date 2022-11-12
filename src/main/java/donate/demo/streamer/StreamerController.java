@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("api")
@@ -96,14 +97,22 @@ public class StreamerController {
         ObjectMapper mapper = new ObjectMapper();
 
         try (Response response = client.newCall(request).execute()) {
-            String result = response.body().string();
+            String result = Objects.requireNonNull(response.body()).string();
             Map<String, List<Map<String, Object>>> map = mapper.readValue(result, Map.class);
-            //Integer totalRecords = map.get("totalRecords");
             List<Map<String, Object>> donations = map.get("data");
             return mapper.readValue(mapper.writeValueAsString(donations), new TypeReference<List<DonationInfo>>() {});
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @GetMapping("user/{id}/status")
+    public String getStatus(@PathVariable("id") String id) {
+        StreamerInfo streamer = this.getInfo(id);
+        if (Objects.equals(streamer.getStatus().toString(), "ACTIVE")) {
+            return "{\"status\": true}";
+        }
+        return "{\"status\": false}";
     }
 
 }
